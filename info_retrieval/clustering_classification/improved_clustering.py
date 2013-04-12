@@ -1,5 +1,5 @@
 '''
-Created on Apr 3, 2013
+Created on Apr 8, 2013
 
 @author: Himanshu Barthwal
 '''
@@ -7,7 +7,7 @@ from bing import DocumentsGenerator
 from vector_space import VectorSpace
 from random import randint
 from operator import itemgetter
-from pprint import pprint
+from sys import argv
 
 class KMeans:
     
@@ -17,20 +17,22 @@ class KMeans:
     _classList = ['texas aggies', 'texas longhorns',
                  'duke blue devils','dallas cowboys',
                  'dallas mavericks']
-    _expectedNumberOfClusters = 6
+    _expectedNumberOfClusters = 50
     _clusters = {'cluster1' : {'vectorIndices':set(), 'center' : [], 
                                'assignedclasses':{'texas aggies': 0}
                             }
                 }
     
+    
     def __init__(self, dataCacheFilePath):
         self._bingDocsGenerator = DocumentsGenerator(dataCacheFilePath)
-        self._vectorSpace = VectorSpace(self._populateDocuments())
+        self._vectorSpace = VectorSpace(self._populateDocuments(), True, True)
         self._vectorsInfo =  self._vectorSpace.getAllDocumentVectors()
     
     def _populateDocuments(self):
         print 'Getting documents for clustering'
         jsonData = self._bingDocsGenerator.getDocuments(self._classList)
+        print len(jsonData), ' is the number of documents'
         return jsonData
     
     def _generateRandomPoint(self):
@@ -41,7 +43,6 @@ class KMeans:
     
     def _getDistance(self, docVector1, docVector2):
         return self._vectorSpace.getEuclidianDistance(docVector1, docVector2)
-        #return 1 - self._vectorSpace.getCosineSimilarity(docVector1, docVector2)
         
     def _isContained(self, vectorList, vectorElement):
         for vector in vectorList:
@@ -154,7 +155,7 @@ class KMeans:
                 self._initializeClusters()
                 iterCount = 0
                 continue
-                        
+            
             self._calculateCentroids()
             self._clearClusterMembers()
             iterCount += 1
@@ -207,13 +208,12 @@ class KMeans:
         falseNegativesCount = 0
         truePositivesCount = 0
         trueNegativesCount = 0
-        iterCount = 0
+        
         for vectorIndex1 in range(len(self._vectorsInfo)):
             for vectorIndex2 in range(len(self._vectorsInfo)):
                 if vectorIndex1 == vectorIndex2:
                     continue
                 else:
-                    iterCount += 1
                     vectorInfo1 = self._vectorsInfo[vectorIndex1]
                     vectorInfo2 = self._vectorsInfo[vectorIndex2]
                     haveSameClass = vectorInfo1['class'] == vectorInfo2['class']
@@ -229,14 +229,13 @@ class KMeans:
                             falsePositivesCount += 1
                         else :
                             trueNegativesCount += 1
-        print 'Number of iterations :', iterCount
-        print 'TN:', trueNegativesCount/ 2, ' TP: ', truePositivesCount/2
-        print 'FP: ', falsePositivesCount/2, 'FN: ', falseNegativesCount/2
         total = trueNegativesCount + truePositivesCount + falseNegativesCount + falsePositivesCount
         RI = float(truePositivesCount + trueNegativesCount) / total
         return RI
 
 def main():
+    print 'Main'
+    #'/tmp/data.json'
     clustering = KMeans('kmeans.json')
     clustering.clusterPoints()
     
