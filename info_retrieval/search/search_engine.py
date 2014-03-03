@@ -1,7 +1,7 @@
 '''
 Created on Feb 5, 2013
 
-@author: Preeti Suman
+@author: Himanshu Barthwal
 '''
 import pickle, sys, re
 from os import listdir
